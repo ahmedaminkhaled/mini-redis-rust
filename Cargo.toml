@@ -1,0 +1,10 @@
+[package]
+name = "mini_redis"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1.47.1", features = ["full"] }
+mini-redis = "0.4"
+bytes = "1.10.1"
+hash = "0.3.0"
