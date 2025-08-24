@@ -5,14 +5,17 @@ use std::sync::{Arc, Mutex};
 use tokio::net::{TcpListener, TcpStream};
 use mini_redis::{frame, Connection, Frame};
 type Shardeddb=Arc<Vec<Mutex<HashMap<String,Vec<u8>>>>>;
+mod connection;
+#[cfg(test)]
+mod tests;
 use bytes::Bytes;
 //number of shards
-const N:u8=32;
+pub const N:u8=32;
 
 //our local host
 const ADDRESS:&str="127.0.0.1:6969";
 //creates a sharded db using arc and mutex
-fn new_sharded_db()->Shardeddb{
+pub fn new_sharded_db()->Shardeddb{
     let mut db=Vec::with_capacity(N as usize);
     for _ in 0..N{
         db.push(Mutex::new(HashMap::new()));
@@ -20,9 +23,9 @@ fn new_sharded_db()->Shardeddb{
     Arc::new(db)
 }
 //indexing the db vector using a hashing algorithm
-fn index(key:&str)->usize{
+pub fn index(key:&str)->usize{
     let mut hasher=DefaultHasher::new();
-    key.hash(&mut hasher);
+    key.hash( &mut hasher);
     (hasher.finish() as usize)%(N as usize)
 }
 
@@ -41,7 +44,7 @@ async fn main(){
         });
     }
 }
-async fn process(socket: TcpStream,db:Shardeddb) {
+pub async fn process(socket: TcpStream,db:Shardeddb) {
     use mini_redis::Command::{self, Get, Set};
     //create a connection wrapper to the tcp socket
     let mut connection=Connection::new(socket);
